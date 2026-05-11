@@ -6,9 +6,24 @@ TABLES = {
 
         "sheet": "TF_PurchaseOrder",
 
-        "primary_key": "rowUnique",
+        "primary_key": "orderno",
 
-        "table_type": "fact"
+        "table_type": "fact",
+
+        "date_columns": [
+            "orderdate2"
+        ],
+
+        "required_columns": [
+
+            "customerid",
+
+            "productid",
+
+            "orderdate2",
+
+            "orderno"
+        ] 
     },
 
     "customer": {
@@ -17,9 +32,14 @@ TABLES = {
 
         "sheet": "TD_Customer",
 
-        "primary_key": "CustomerID",
+        "primary_key": "customerid",
 
-        "table_type": "dimension"
+        "table_type": "dimension",
+        
+        "required_columns": [
+
+            "customerid"
+        ] 
     },
 
     "product": {
@@ -28,9 +48,14 @@ TABLES = {
 
         "sheet": "TD_Product",
 
-        "primary_key": "ProductID",
+        "primary_key": "productid",
 
-        "table_type": "dimension"
+        "table_type": "dimension",
+
+        "required_columns": [
+
+            "productid"
+        ] 
     },
 
     "vcp": {
@@ -39,8 +64,15 @@ TABLES = {
 
         "sheet": "VCP",
 
-        "primary_key": "rowUnique",
+        "primary_key": "customerid",
 
-        "table_type": "fact"
+        "table_type": "fact",
+
+        "required_columns": [
+
+            "customerid",
+
+            "productid"
+        ] 
     }
 }
