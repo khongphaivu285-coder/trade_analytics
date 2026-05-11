@@ -248,7 +248,7 @@ header_left, header_right = st.columns([2, 8])
 with header_left:
 
     st.image(
-        r"D:\trade_analytics\dashboards\overview\Untitled (1).png",
+        "dashboards/overview/Untitled (1).png",
         width=250
     )
 

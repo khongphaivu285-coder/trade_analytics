@@ -3,7 +3,7 @@ __pycache__/
 *.pyc
 
 data/parquet/
-data/duckdb/
+# data/duckdb/
 data/exports/
 
 .streamlit/secrets.toml
