@@ -386,7 +386,7 @@ def show_overview(
 
         if st.button(
 
-            "Clear All",
+            "Làm mới bộ lọc",
 
             use_container_width=True,
 

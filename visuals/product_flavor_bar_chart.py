@@ -8,13 +8,14 @@ import pandas as pd
 
 # =========================================
 # PRODUCT FLAVOR BAR
+# STACKED BAR WITH NEGATIVE VALUE
 # =========================================
 
 def render_product_flavor_bar_chart(
 
     df,
 
-    title="Doanh số theo Flavor",
+    title="Doanh số theo Vị và Dòng sản phẩm",
 
     height="420px"
 ):
@@ -91,7 +92,6 @@ def render_product_flavor_bar_chart(
 
     # =====================================
     # SERIES NAME
-    # ADD LINE INTO STACK
     # =====================================
 
     chart_df["series_name"] = (
@@ -206,7 +206,7 @@ def render_product_flavor_bar_chart(
 
             flavor_pct = 0
 
-            if flavor_total > 0:
+            if flavor_total != 0:
 
                 flavor_pct = (
                     value
@@ -239,7 +239,7 @@ def render_product_flavor_bar_chart(
 
             line_pct = 0
 
-            if line_total > 0:
+            if line_total != 0:
 
                 line_pct = (
                     value
@@ -260,7 +260,22 @@ def render_product_flavor_bar_chart(
 
                 "flavor_pct": float(flavor_pct),
 
-                "flavor_name": flavor
+                "flavor_name": flavor,
+
+                # =========================
+                # NEGATIVE COLOR
+                # =========================
+
+                "itemStyle": {
+
+                    "color":
+
+                        "#EE6666"
+
+                        if value < 0
+
+                        else None
+                }
             })
 
         # =================================
@@ -273,9 +288,12 @@ def render_product_flavor_bar_chart(
 
             "type": "bar",
 
+            # KEEP STACK
             "stack": "total",
 
             "barMaxWidth": 42,
+
+            "barMinHeight": 2,
 
             "emphasis": {
 
@@ -373,7 +391,7 @@ def render_product_flavor_bar_chart(
                         let flavorLabel =
                             data.flavor_name || '';
 
-                        if(value > 0) {
+                        if(value !== 0) {
 
                             result +=
 
@@ -408,7 +426,7 @@ def render_product_flavor_bar_chart(
 
                                 + linePct.toFixed(2)
 
-                                + '% của brand: '
+                                + '% của Brand '
 
                                 + lineName
 
@@ -485,7 +503,19 @@ def render_product_flavor_bar_chart(
 
         "yAxis": {
 
-            "type": "value"
+            "type": "value",
+
+            "scale": True,
+
+            "axisLine": {
+
+                "show": True
+            },
+
+            "splitLine": {
+
+                "show": True
+            }
         },
 
         # =================================
