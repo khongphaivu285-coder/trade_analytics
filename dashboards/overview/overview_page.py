@@ -42,6 +42,22 @@ from visuals.interactive_pie_chart import (
     render_interactive_pie
 )
 
+from business_logic.cross_filter.hierarchy_state import (
+
+    initialize_hierarchy_state
+)
+
+from visuals.hierarchy_bar_drilldown import (
+    render_hierarchy_bar
+)
+
+from visuals.hierarchy_sunburst import (
+    render_hierarchy_sunburst
+)
+
+from visuals.product_flavor_bar_chart import (
+    render_product_flavor_bar_chart
+)
 
 # =====================================================
 # LAYOUT CONFIG
@@ -154,6 +170,13 @@ def show_overview(
         trend_result["categories"]
     )
     
+    # =========================================
+    # INIT HIE STATE
+    # =========================================
+
+    initialize_hierarchy_state()
+
+
     # =================================================
     # R1-1
     # =================================================
@@ -480,6 +503,51 @@ def show_overview(
                 dimension_col="chain_3",
 
                 title="Doanh số theo Chuỗi"
+            )
+
+    # =================================================
+    # SPACE
+    # =================================================
+
+    st.markdown(
+        f"<div style='height:{ROW_GAP}px'></div>",
+        unsafe_allow_html=True
+    )
+
+    # =================================================
+    # ROW 5
+    # =================================================
+
+    r5_col_1, r5_col_2 = st.columns(2)
+
+    # =================================================
+    # R5-1
+    # =================================================
+
+    with r5_col_1:
+
+        with st.container(
+            border=True,
+            height=ROW_HEIGHTS["R2"]
+        ):
+
+            render_hierarchy_sunburst(
+            
+                pie_filtered_df,
+
+                title="Doanh số theo Cấu trúc Sản phẩm"
+            )
+
+    with r5_col_2:
+    
+        with st.container(
+            border=True,
+            height=500
+        ):
+    
+            render_product_flavor_bar_chart(
+            
+                pie_filtered_df
             )
 
     # =================================================
