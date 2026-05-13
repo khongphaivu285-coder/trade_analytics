@@ -78,7 +78,8 @@ ROW_GAP = 15
 
 def show_overview(
     filtered_df,
-    master_df
+    master_df,
+    business_filtered_df
 ):
 
     available_years = sorted(
@@ -136,20 +137,17 @@ def show_overview(
     # =================================================
     # KPI CALCULATION
     # =================================================
-
+    
     ytd_value = YTD_OrderValue_Global(
-        filtered_df,
-        master_df
+        business_filtered_df
     )
-
+    
     ytd_ly_value = YTD_LY_OrderValue_Global(
-        filtered_df,
-        master_df
+        business_filtered_df
     )
-
+    
     ytd_growth = YTD_YoY_Growth_Global(
-        filtered_df,
-        master_df
+        business_filtered_df
     )
     
     # =================================================
@@ -157,9 +155,7 @@ def show_overview(
     # =================================================
     
     trend_result = YTD_Trend_13M(
-    
-        filtered_df,
-        master_df
+        business_filtered_df
     )
     
     trend_data = (
@@ -173,10 +169,9 @@ def show_overview(
     # =========================================
     # INIT HIE STATE
     # =========================================
-
+    
     initialize_hierarchy_state()
-
-
+    
     # =================================================
     # R1-1
     # =================================================
@@ -211,53 +206,43 @@ def show_overview(
     
                 height="260px"
             )
-        
+    
     # =================================================
     # R1-2 KPI
     # =================================================
-
+    
     current_month_value = (
-
+    
         CurrentMonth_OrderValue_Global(
-
-            filtered_df,
-            master_df
+            business_filtered_df
         )
     )
-
+    
     current_vs_ly = (
-
+    
         CurrentMonth_vs_LY_Global(
-
-            filtered_df,
-            master_df
+            business_filtered_df
         )
     )
-
+    
     current_vs_last_month = (
-
+    
         CurrentMonth_vs_LastMonth_Global(
-
-            filtered_df,
-            master_df
+            business_filtered_df
         )
     )
-
+    
     current_vs_avg3m = (
-
+    
         CurrentMonth_vs_Avg3M_Global(
-
-            filtered_df,
-            master_df
+            business_filtered_df
         )
     )
-
+    
     current_vs_avg6m = (
-
+    
         CurrentMonth_vs_Avg6M_Global(
-
-            filtered_df,
-            master_df
+            business_filtered_df
         )
     )
     # =================================================

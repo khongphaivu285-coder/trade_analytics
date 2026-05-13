@@ -37,9 +37,14 @@ def apply_common_filter(
 
     filter_columns = [
 
+        "kênh",
+
         "tbd_line_name",
+
         "nhóm_khách_hàng",
+
         "khu_vực",
+
         "chain_3"
     ]
 
@@ -69,9 +74,9 @@ def apply_common_filter(
 
         (result_df["ordertype1"] == "BÁN")
 
-        &
+        # &
 
-        (result_df["kênh"] == "1. MT")
+        # (result_df["kênh"] == "1. MT")
     ]
 
     return result_df
@@ -81,21 +86,13 @@ def apply_common_filter(
 # YTD ORDER VALUE
 # =========================================
 
-def YTD_OrderValue(
-
-    filtered_df,
-    master_df
-):
+def YTD_OrderValue(df):
 
     # =====================================
-    # COMMON FILTER
+    # PREPARE
     # =====================================
 
-    df = apply_common_filter(
-
-        filtered_df,
-        master_df
-    )
+    df = prepare_df(df)
 
     # =====================================
     # CURRENT DATE
@@ -106,7 +103,9 @@ def YTD_OrderValue(
         .max()
     )
 
-    current_year = max_date.year
+    current_year = (
+        max_date.year
+    )
 
     # =====================================
     # YTD FILTER
@@ -135,21 +134,13 @@ def YTD_OrderValue(
 # YTD LY ORDER VALUE
 # =========================================
 
-def YTD_LY_OrderValue(
-
-    filtered_df,
-    master_df
-):
+def YTD_LY_OrderValue(df):
 
     # =====================================
-    # COMMON FILTER
+    # PREPARE
     # =====================================
 
-    df = apply_common_filter(
-
-        filtered_df,
-        master_df
-    )
+    df = prepare_df(df)
 
     # =====================================
     # CURRENT DATE
@@ -169,7 +160,9 @@ def YTD_LY_OrderValue(
         - pd.DateOffset(years=1)
     )
 
-    ly_year = ly_max_date.year
+    ly_year = (
+        ly_max_date.year
+    )
 
     # =====================================
     # LY FILTER
@@ -198,30 +191,22 @@ def YTD_LY_OrderValue(
 # YTD YOY GROWTH
 # =========================================
 
-def YTD_YoY_Growth(
-
-    filtered_df,
-    master_df
-):
+def YTD_YoY_Growth(df):
 
     # =====================================
     # CURRENT VALUE
     # =====================================
 
-    current_value = YTD_OrderValue(
-
-        filtered_df,
-        master_df
+    current_value = (
+        YTD_OrderValue(df)
     )
 
     # =====================================
     # LY VALUE
     # =====================================
 
-    ly_value = YTD_LY_OrderValue(
-
-        filtered_df,
-        master_df
+    ly_value = (
+        YTD_LY_OrderValue(df)
     )
 
     # =====================================
@@ -230,7 +215,7 @@ def YTD_YoY_Growth(
 
     if ly_value == 0:
 
-        return None
+        return 0
 
     # =====================================
     # YOY %
@@ -253,27 +238,18 @@ def YTD_YoY_Growth(
 
     return round(growth, 2)
 
-# M4 =========================================
 
 # =========================================
 # TOTAL VOLUME
 # =========================================
 
-def Total_Volume(
-
-    filtered_df,
-    master_df
-):
+def Total_Volume(df):
 
     # =====================================
-    # COMMON FILTER
+    # PREPARE
     # =====================================
 
-    df = apply_common_filter(
-
-        filtered_df,
-        master_df
-    )
+    df = prepare_df(df)
 
     # =====================================
     # CURRENT DATE
@@ -304,21 +280,13 @@ def Total_Volume(
 # YTD TREND 13 MONTHS
 # =========================================
 
-def YTD_Trend_13M(
-
-    filtered_df,
-    master_df
-):
+def YTD_Trend_13M(df):
 
     # =====================================
-    # FILTER
+    # PREPARE
     # =====================================
 
-    df = apply_common_filter(
-
-        filtered_df,
-        master_df
-    )
+    df = prepare_df(df)
 
     # =====================================
     # YEAR MONTH
@@ -363,100 +331,36 @@ def YTD_Trend_13M(
         )
     }
 
-import pandas as pd
-
-
 # =========================================
-# APPLY BUSINESS FILTER ONLY
+# BASE PREPARE
 # =========================================
 
-def apply_business_filter_only(
+def prepare_df(df):
 
-    filtered_df,
-    master_df
-):
+    df = df.copy()
 
-    # =====================================
-    # COPY
-    # =====================================
-
-    base_df = master_df.copy()
-
-    selected_df = filtered_df.copy()
-
-    # =====================================
-    # DATETIME
-    # =====================================
-
-    base_df["orderdate2"] = pd.to_datetime(
-        base_df["orderdate2"]
+    df["orderdate2"] = pd.to_datetime(
+        df["orderdate2"]
     )
-
-    # =====================================
-    # FILTER COLUMNS
-    # =====================================
-
-    filter_columns = [
-
-        "tbd_line_name",
-        "khu_vực",
-        "nhóm_khách_hàng",
-        "chain_3"
-    ]
-
-    # =====================================
-    # APPLY FILTER
-    # =====================================
-
-    for col in filter_columns:
-
-        selected_values = (
-
-            selected_df[col]
-            .dropna()
-            .unique()
-            .tolist()
-        )
-
-        if len(selected_values) > 0:
-
-            base_df = base_df[
-
-                base_df[col]
-                .isin(selected_values)
-            ]
 
     # =====================================
     # BUSINESS RULE
     # =====================================
 
-    base_df = base_df[
-
-        (base_df["ordertype1"] == "BÁN")
-
-        &
-
-        (base_df["kênh"] == "1. MT")
+    df = df[
+        df["ordertype1"] == "BÁN"
     ]
 
-    return base_df
+    return df
 
 
 # =========================================
 # YTD ORDER VALUE - GLOBAL
 # =========================================
 
-def YTD_OrderValue_Global(
+def YTD_OrderValue_Global(df):
 
-    filtered_df,
-    master_df
-):
-
-    df = apply_business_filter_only(
-
-        filtered_df,
-        master_df
-    )
+    df = prepare_df(df)
 
     max_date = (
         df["orderdate2"]
@@ -486,17 +390,9 @@ def YTD_OrderValue_Global(
 # YTD LY ORDER VALUE - GLOBAL
 # =========================================
 
-def YTD_LY_OrderValue_Global(
+def YTD_LY_OrderValue_Global(df):
 
-    filtered_df,
-    master_df
-):
-
-    df = apply_business_filter_only(
-
-        filtered_df,
-        master_df
-    )
+    df = prepare_df(df)
 
     max_date = (
         df["orderdate2"]
@@ -531,22 +427,14 @@ def YTD_LY_OrderValue_Global(
 # YTD YOY GROWTH - GLOBAL
 # =========================================
 
-def YTD_YoY_Growth_Global(
+def YTD_YoY_Growth_Global(df):
 
-    filtered_df,
-    master_df
-):
-
-    current_value = YTD_OrderValue_Global(
-
-        filtered_df,
-        master_df
+    current_value = (
+        YTD_OrderValue_Global(df)
     )
 
-    ly_value = YTD_LY_OrderValue_Global(
-
-        filtered_df,
-        master_df
+    ly_value = (
+        YTD_LY_OrderValue_Global(df)
     )
 
     if ly_value == 0:
@@ -571,17 +459,9 @@ def YTD_YoY_Growth_Global(
 # CURRENT MONTH ORDER VALUE
 # =========================================
 
-def CurrentMonth_OrderValue_Global(
+def CurrentMonth_OrderValue_Global(df):
 
-    filtered_df,
-    master_df
-):
-
-    df = apply_business_filter_only(
-
-        filtered_df,
-        master_df
-    )
+    df = prepare_df(df)
 
     max_date = (
         df["orderdate2"]
@@ -606,17 +486,9 @@ def CurrentMonth_OrderValue_Global(
 # CURRENT MONTH VS LY
 # =========================================
 
-def CurrentMonth_vs_LY_Global(
+def CurrentMonth_vs_LY_Global(df):
 
-    filtered_df,
-    master_df
-):
-
-    df = apply_business_filter_only(
-
-        filtered_df,
-        master_df
-    )
+    df = prepare_df(df)
 
     max_date = (
         df["orderdate2"]
@@ -655,35 +527,27 @@ def CurrentMonth_vs_LY_Global(
 
         return 0
 
-    return round(
+    growth = (
 
         (
-            (
-                current_value
-                - ly_value
-            )
-            / ly_value
-        ) * 100,
+            current_value
+            - ly_value
+        )
 
-        2
-    )
+        / ly_value
+
+    ) * 100
+
+    return round(growth, 2)
 
 
 # =========================================
 # CURRENT MONTH VS LAST MONTH
 # =========================================
 
-def CurrentMonth_vs_LastMonth_Global(
+def CurrentMonth_vs_LastMonth_Global(df):
 
-    filtered_df,
-    master_df
-):
-
-    df = apply_business_filter_only(
-
-        filtered_df,
-        master_df
-    )
+    df = prepare_df(df)
 
     max_date = (
         df["orderdate2"]
@@ -722,35 +586,27 @@ def CurrentMonth_vs_LastMonth_Global(
 
         return 0
 
-    return round(
+    growth = (
 
         (
-            (
-                current_value
-                - prev_value
-            )
-            / prev_value
-        ) * 100,
+            current_value
+            - prev_value
+        )
 
-        2
-    )
+        / prev_value
+
+    ) * 100
+
+    return round(growth, 2)
 
 
 # =========================================
 # CURRENT MONTH VS AVG 3M
 # =========================================
 
-def CurrentMonth_vs_Avg3M_Global(
+def CurrentMonth_vs_Avg3M_Global(df):
 
-    filtered_df,
-    master_df
-):
-
-    df = apply_business_filter_only(
-
-        filtered_df,
-        master_df
-    )
+    df = prepare_df(df)
 
     df["YearMonth"] = (
         df["orderdate2"]
@@ -795,35 +651,27 @@ def CurrentMonth_vs_Avg3M_Global(
 
         return 0
 
-    return round(
+    growth = (
 
         (
-            (
-                current_value
-                - avg_3m
-            )
-            / avg_3m
-        ) * 100,
+            current_value
+            - avg_3m
+        )
 
-        2
-    )
+        / avg_3m
+
+    ) * 100
+
+    return round(growth, 2)
 
 
 # =========================================
 # CURRENT MONTH VS AVG 6M
 # =========================================
 
-def CurrentMonth_vs_Avg6M_Global(
+def CurrentMonth_vs_Avg6M_Global(df):
 
-    filtered_df,
-    master_df
-):
-
-    df = apply_business_filter_only(
-
-        filtered_df,
-        master_df
-    )
+    df = prepare_df(df)
 
     df["YearMonth"] = (
         df["orderdate2"]
@@ -868,15 +716,15 @@ def CurrentMonth_vs_Avg6M_Global(
 
         return 0
 
-    return round(
+    growth = (
 
         (
-            (
-                current_value
-                - avg_6m
-            )
-            / avg_6m
-        ) * 100,
+            current_value
+            - avg_6m
+        )
 
-        2
-    )
+        / avg_6m
+
+    ) * 100
+
+    return round(growth, 2)

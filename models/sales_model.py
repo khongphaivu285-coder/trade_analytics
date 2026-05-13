@@ -140,7 +140,7 @@ def sales_model():
     WHERE 1 = 1
 
         AND po.orderno IS NOT NULL
-        AND po."kênh" = '1. MT'
+        AND po."kênh" IN ('1. MT', 'NPP LIÊN MINH')
         AND po.ordertype1 = 'BÁN'
 
     """

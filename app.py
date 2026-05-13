@@ -205,6 +205,38 @@ st.markdown(
 master_df = sales_model()
 
 # =========================================
+# NORMALIZE BLANK VALUE
+# =========================================
+
+filter_columns = [
+
+    "kênh",
+
+    "tbd_line_name",
+
+    "khu_vực",
+
+    "nhóm_khách_hàng",
+
+    "chain_3"
+]
+
+for col in filter_columns:
+
+    master_df[col] = (
+
+        master_df[col]
+
+        .fillna("BLANK")
+
+        .replace("", "BLANK")
+
+        .astype(str)
+        .str.strip()
+        .replace("nan", "BLANK")
+    )
+
+# =========================================
 # INIT PIE FILTER
 # =========================================
 
@@ -282,17 +314,14 @@ st.markdown(
 
 def filter_label(selected, available):
 
-    if len(selected) == 0:
-
+    if not selected:
         return "ALL"
 
     if set(selected) == set(available):
-
         return "ALL"
 
-    if len(selected) == 1:
-
-        return str(selected[0])
+    if len(selected) <= 3:
+        return ", ".join(map(str, selected))
 
     return f"{len(selected)} selected"
 
@@ -316,30 +345,8 @@ with st.container(
         .tolist()
     )
 
-    available_line = sorted(
-        master_df["tbd_line_name"]
-        .dropna()
-        .unique()
-        .tolist()
-    )
-
-    available_region = sorted(
-        master_df["khu_vực"]
-        .dropna()
-        .unique()
-        .tolist()
-    )
-
-    available_group = sorted(
-        master_df["nhóm_khách_hàng"]
-        .dropna()
-        .unique()
-        .tolist()
-    )
-
-    available_chain_3 = sorted(
-        master_df["chain_3"]
-        .dropna()
+    available_channel = sorted(
+        master_df["kênh"]
         .unique()
         .tolist()
     )
@@ -347,96 +354,240 @@ with st.container(
     # =====================================
     # TIME FILTER
     # =====================================
-
+    
     st.subheader(
         "Bộ lọc theo thời gian"
     )
-
+    
     time_col_1, time_col_2 = st.columns(2)
-
+    
     with time_col_1:
-
+    
         selected_years = st.multiselect(
             "Năm",
             options=available_years,
             default=available_years
         )
-
+    
     with time_col_2:
-
-        month_options = (
-            master_df[
-                master_df["order_year"]
-                .isin(selected_years)
-            ][[
-                "order_year",
-                "order_month"
-            ]]
-            .drop_duplicates()
-            .sort_values([
-                "order_year",
-                "order_month"
-            ])
-        )
-
-        month_options["label"] = (
-            month_options["order_year"]
-            .astype(int)
-            .astype(str)
-
-            + "-"
-
-            +
-
-            month_options["order_month"]
-            .astype(int)
-            .astype(str)
-            .str.zfill(2)
-        )
-
-        available_months = (
-            month_options["label"]
-            .tolist()
-        )
-
+    
         with st.expander(
-            "Bộ lọc Năm - Tháng",
+            "Năm - Tháng",
             expanded=False
         ):
-
+    
+            month_options = (
+                master_df[
+                    master_df["order_year"]
+                    .isin(selected_years)
+                ][[
+                    "order_year",
+                    "order_month"
+                ]]
+                .drop_duplicates()
+                .sort_values([
+                    "order_year",
+                    "order_month"
+                ])
+            )
+    
+            month_options["label"] = (
+            
+                month_options["order_year"]
+                .astype(int)
+                .astype(str)
+    
+                + "-"
+    
+                +
+    
+                month_options["order_month"]
+                .astype(int)
+                .astype(str)
+                .str.zfill(2)
+            )
+    
+            available_months = (
+                month_options["label"]
+                .tolist()
+            )
+    
             selected_months = st.multiselect(
-                "Năm - Tháng",
+                "Chọn tháng",
                 options=available_months,
                 default=available_months
             )
-
+    
     st.divider()
 
-    summary_col_1, summary_col_2, summary_col_3, summary_col_4 = st.columns(4)
+    # =====================================
+    # DEFAULT CHANNEL
+    # =====================================
 
-    with summary_col_1:
+    default_channel = (
+        ["1. MT"]
+        if "1. MT" in available_channel
+        else available_channel
+    )
 
-        st.caption(
-            f"Dòng sản phẩm: {filter_label(available_line, available_line)}"
+    # =====================================
+    # INIT SESSION STATE
+    # =====================================
+
+    if "selected_channel" not in st.session_state:
+
+        st.session_state["selected_channel"] = (
+            default_channel
         )
 
-    with summary_col_2:
+    # =====================================
+    # CHANNEL FILTER
+    # =====================================
 
-        st.caption(
-            f"Khu vực: {filter_label(available_region, available_region)}"
+    selected_channel = st.multiselect(
+        "Kênh",
+        options=available_channel,
+        key="selected_channel"
+    )
+
+    # =====================================
+    # DETECT CHANNEL CHANGE
+    # =====================================
+
+    current_channel_key = "|".join(
+        sorted(selected_channel)
+    )
+
+    previous_channel_key = (
+        st.session_state.get(
+            "previous_channel_key",
+            ""
+        )
+    )
+
+    # =====================================
+    # CHANNEL FILTERED DATA
+    # =====================================
+
+    channel_filtered_df = master_df[
+        master_df["kênh"]
+        .isin(selected_channel)
+    ]
+
+    # =====================================
+    # CASCADE AVAILABLE VALUES
+    # =====================================
+
+    available_line = sorted(
+        channel_filtered_df["tbd_line_name"]
+        .unique()
+        .tolist()
+    )
+
+    available_region = sorted(
+        channel_filtered_df["khu_vực"]
+        .unique()
+        .tolist()
+    )
+
+    available_group = sorted(
+        channel_filtered_df["nhóm_khách_hàng"]
+        .unique()
+        .tolist()
+    )
+
+    available_chain_3 = sorted(
+        channel_filtered_df["chain_3"]
+        .unique()
+        .tolist()
+    )
+
+    # =====================================
+    # RESET BUSINESS FILTERS
+    # =====================================
+
+    if current_channel_key != previous_channel_key:
+
+        # =================================
+        # REMOVE OLD FILTER STATE
+        # =================================
+
+        for key in [
+
+            "selected_line",
+
+            "selected_region",
+
+            "selected_group",
+
+            "selected_chain_3"
+        ]:
+
+            if key in st.session_state:
+
+                del st.session_state[key]
+
+        # =================================
+        # SELECT ALL NEW VALUES
+        # =================================
+
+        st.session_state["selected_line"] = (
+            available_line
         )
 
-    with summary_col_3:
-
-        st.caption(
-            f"Nhóm khách hàng: {filter_label(available_group, available_group)}"
+        st.session_state["selected_region"] = (
+            available_region
         )
 
-    with summary_col_4:
-
-        st.caption(
-            f"Chuỗi: {filter_label(available_chain_3, available_chain_3)}"
+        st.session_state["selected_group"] = (
+            available_group
         )
+
+        st.session_state["selected_chain_3"] = (
+            available_chain_3
+        )
+
+        # =================================
+        # UPDATE CHANNEL KEY
+        # =================================
+
+        st.session_state["previous_channel_key"] = (
+            current_channel_key
+        )
+
+        st.rerun()
+
+    # =====================================
+    # INIT FILTER STATE
+    # =====================================
+
+    if "selected_line" not in st.session_state:
+
+        st.session_state["selected_line"] = (
+            available_line
+        )
+
+    if "selected_region" not in st.session_state:
+
+        st.session_state["selected_region"] = (
+            available_region
+        )
+
+    if "selected_group" not in st.session_state:
+
+        st.session_state["selected_group"] = (
+            available_group
+        )
+
+    if "selected_chain_3" not in st.session_state:
+
+        st.session_state["selected_chain_3"] = (
+            available_chain_3
+        )
+
+    # =====================================
+    # OTHER FILTERS
+    # =====================================
 
     with st.expander(
         "Lọc theo các yếu tố khác",
@@ -450,7 +601,7 @@ with st.container(
             selected_line = st.multiselect(
                 "Dòng sản phẩm",
                 options=available_line,
-                default=available_line
+                key="selected_line"
             )
 
         with filter_col_2:
@@ -458,7 +609,7 @@ with st.container(
             selected_region = st.multiselect(
                 "Khu vực",
                 options=available_region,
-                default=available_region
+                key="selected_region"
             )
 
         filter_col_3, filter_col_4 = st.columns(2)
@@ -468,7 +619,7 @@ with st.container(
             selected_group = st.multiselect(
                 "Nhóm khách hàng",
                 options=available_group,
-                default=available_group
+                key="selected_group"
             )
 
         with filter_col_4:
@@ -476,14 +627,62 @@ with st.container(
             selected_chain_3 = st.multiselect(
                 "Chuỗi",
                 options=available_chain_3,
-                default=available_chain_3
+                key="selected_chain_3"
             )
+
+    # =====================================
+    # SUMMARY
+    # =====================================
+
+    summary_col_1, summary_col_2, summary_col_3, summary_col_4, summary_col_5 = st.columns(5)
+
+    with summary_col_1:
+
+        st.caption(
+            f"Dòng sản phẩm: {filter_label(selected_line, available_line)}"
+        )
+
+    with summary_col_2:
+
+        st.caption(
+            f"Khu vực: {filter_label(selected_region, available_region)}"
+        )
+
+    with summary_col_3:
+
+        st.caption(
+            f"Nhóm khách hàng: {filter_label(selected_group, available_group)}"
+        )
+
+    with summary_col_4:
+
+        st.caption(
+            f"Chuỗi: {filter_label(selected_chain_3, available_chain_3)}"
+        )
+
+    with summary_col_5:
+
+        st.caption(
+            f"Kênh: {filter_label(selected_channel, available_channel)}"
+        )
 
 # =========================================
 # APPLY FILTER
 # =========================================
 
 filtered_df = master_df.copy()
+
+# =========================================
+# KPI / GLOBAL TIME INTELLIGENCE
+# -> KHÔNG bị ảnh hưởng bởi year/month slicer
+# =========================================
+
+business_filtered_df = master_df.copy()
+
+# =========================================
+# YEAR FILTER
+# -> chỉ apply cho visual/table
+# =========================================
 
 if set(selected_years) != set(available_years):
 
@@ -492,12 +691,41 @@ if set(selected_years) != set(available_years):
         .isin(selected_years)
     ]
 
+# =========================================
+# CHANNEL
+# =========================================
+
+if set(selected_channel) != set(available_channel):
+
+    filtered_df = filtered_df[
+        filtered_df["kênh"]
+        .isin(selected_channel)
+    ]
+
+    business_filtered_df = business_filtered_df[
+        business_filtered_df["kênh"]
+        .isin(selected_channel)
+    ]
+
+# =========================================
+# LINE
+# =========================================
+
 if set(selected_line) != set(available_line):
 
     filtered_df = filtered_df[
         filtered_df["tbd_line_name"]
         .isin(selected_line)
     ]
+
+    business_filtered_df = business_filtered_df[
+        business_filtered_df["tbd_line_name"]
+        .isin(selected_line)
+    ]
+
+# =========================================
+# REGION
+# =========================================
 
 if set(selected_region) != set(available_region):
 
@@ -506,6 +734,15 @@ if set(selected_region) != set(available_region):
         .isin(selected_region)
     ]
 
+    business_filtered_df = business_filtered_df[
+        business_filtered_df["khu_vực"]
+        .isin(selected_region)
+    ]
+
+# =========================================
+# CUSTOMER GROUP
+# =========================================
+
 if set(selected_group) != set(available_group):
 
     filtered_df = filtered_df[
@@ -513,12 +750,30 @@ if set(selected_group) != set(available_group):
         .isin(selected_group)
     ]
 
+    business_filtered_df = business_filtered_df[
+        business_filtered_df["nhóm_khách_hàng"]
+        .isin(selected_group)
+    ]
+
+# =========================================
+# CHAIN 3
+# =========================================
+
 if set(selected_chain_3) != set(available_chain_3):
 
     filtered_df = filtered_df[
         filtered_df["chain_3"]
         .isin(selected_chain_3)
     ]
+
+    business_filtered_df = business_filtered_df[
+        business_filtered_df["chain_3"]
+        .isin(selected_chain_3)
+    ]
+
+# =========================================
+# YEAR MONTH
+# =========================================
 
 filtered_df["year_month"] = (
 
@@ -536,6 +791,11 @@ filtered_df["year_month"] = (
     .str.zfill(2)
 )
 
+# =========================================
+# MONTH FILTER
+# -> KHÔNG apply cho business_filtered_df
+# =========================================
+
 if set(selected_months) != set(available_months):
 
     filtered_df = filtered_df[
@@ -543,6 +803,14 @@ if set(selected_months) != set(available_months):
         .isin(selected_months)
     ]
 
+# =========================================
+# OPTIONAL:
+# tránh SettingWithCopyWarning
+# =========================================
+
+filtered_df = filtered_df.copy()
+
+business_filtered_df = business_filtered_df.copy()
 
 # =========================================
 # HEADER GAP
@@ -561,19 +829,22 @@ if page == "📈 Tổng quan":
 
     show_overview(
         filtered_df,
-        master_df
+        master_df,
+        business_filtered_df
     )
 
 elif page == "📦 By Product":
 
-    show_by_product(
+    show_overview(
         filtered_df,
-        master_df
+        master_df,
+        business_filtered_df
     )
 
 elif page == "🏪 By Account":
 
-    show_by_account(
+    show_overview(
         filtered_df,
-        master_df
+        master_df,
+        business_filtered_df
     )
