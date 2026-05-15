@@ -44,7 +44,6 @@ def render_hierarchy_sunburst(
     brand_list = (
 
         grouped_df["tbd_brand_1"]
-        .dropna()
         .unique()
         .tolist()
     )
@@ -105,7 +104,6 @@ def render_hierarchy_sunburst(
         for line in (
 
             brand_df["tbd_line_name"]
-            .dropna()
             .unique()
         ):
 

@@ -54,7 +54,6 @@ def apply_common_filter(
 
         selected_values = (
             filtered_df[col]
-            .dropna()
             .unique()
             .tolist()
         )
