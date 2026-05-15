@@ -86,13 +86,21 @@ def apply_common_filter(
 # YTD ORDER VALUE
 # =========================================
 
-def YTD_OrderValue(df):
+def YTD_OrderValue(
+
+    filtered_df,
+    master_df
+):
 
     # =====================================
-    # PREPARE
+    # COMMON FILTER
     # =====================================
 
-    df = prepare_df(df)
+    df = apply_common_filter(
+
+        filtered_df,
+        master_df
+    )
 
     # =====================================
     # CURRENT DATE
@@ -103,9 +111,7 @@ def YTD_OrderValue(df):
         .max()
     )
 
-    current_year = (
-        max_date.year
-    )
+    current_year = max_date.year
 
     # =====================================
     # YTD FILTER
@@ -134,13 +140,21 @@ def YTD_OrderValue(df):
 # YTD LY ORDER VALUE
 # =========================================
 
-def YTD_LY_OrderValue(df):
+def YTD_LY_OrderValue(
+
+    filtered_df,
+    master_df
+):
 
     # =====================================
-    # PREPARE
+    # COMMON FILTER
     # =====================================
 
-    df = prepare_df(df)
+    df = apply_common_filter(
+
+        filtered_df,
+        master_df
+    )
 
     # =====================================
     # CURRENT DATE
@@ -160,9 +174,7 @@ def YTD_LY_OrderValue(df):
         - pd.DateOffset(years=1)
     )
 
-    ly_year = (
-        ly_max_date.year
-    )
+    ly_year = ly_max_date.year
 
     # =====================================
     # LY FILTER
@@ -191,22 +203,30 @@ def YTD_LY_OrderValue(df):
 # YTD YOY GROWTH
 # =========================================
 
-def YTD_YoY_Growth(df):
+def YTD_YoY_Growth(
+
+    filtered_df,
+    master_df
+):
 
     # =====================================
     # CURRENT VALUE
     # =====================================
 
-    current_value = (
-        YTD_OrderValue(df)
+    current_value = YTD_OrderValue(
+
+        filtered_df,
+        master_df
     )
 
     # =====================================
     # LY VALUE
     # =====================================
 
-    ly_value = (
-        YTD_LY_OrderValue(df)
+    ly_value = YTD_LY_OrderValue(
+
+        filtered_df,
+        master_df
     )
 
     # =====================================
@@ -215,7 +235,7 @@ def YTD_YoY_Growth(df):
 
     if ly_value == 0:
 
-        return 0
+        return None
 
     # =====================================
     # YOY %
@@ -238,18 +258,27 @@ def YTD_YoY_Growth(df):
 
     return round(growth, 2)
 
+# M4 =========================================
 
 # =========================================
 # TOTAL VOLUME
 # =========================================
 
-def Total_Volume(df):
+def Total_Volume(
+
+    filtered_df,
+    master_df
+):
 
     # =====================================
-    # PREPARE
+    # COMMON FILTER
     # =====================================
 
-    df = prepare_df(df)
+    df = apply_common_filter(
+
+        filtered_df,
+        master_df
+    )
 
     # =====================================
     # CURRENT DATE
